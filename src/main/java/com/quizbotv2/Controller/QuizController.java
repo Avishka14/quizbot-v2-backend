@@ -8,16 +8,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/chat")
-public class ChatController {
+public class QuizController {
 
     private final OpenRouterService openRouterService;
 
-    public ChatController(OpenRouterService openRouterService) {
+    public QuizController(OpenRouterService openRouterService) {
         this.openRouterService = openRouterService;
     }
 
     @PostMapping
-    public String chat(@RequestBody String prompt){
-        return openRouterService.getChatResponse(prompt);
+    public String chat(@RequestBody String quizTopic){
+        return openRouterService.getQuizResponse(quizTopic);
     }
 }

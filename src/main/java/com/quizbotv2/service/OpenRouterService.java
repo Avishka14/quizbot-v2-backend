@@ -1,8 +1,8 @@
 package com.quizbotv2.service;
 
-import com.quizbotv2.dto.ChatMessage;
-import com.quizbotv2.dto.ChatRequest;
-import com.quizbotv2.dto.ChatResponse;
+import com.quizbotv2.dto.QuizTopic;
+import com.quizbotv2.dto.QuizRequest;
+import com.quizbotv2.dto.QuizResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,18 +21,18 @@ public class OpenRouterService {
         this.webClient = webClient;
     }
 
-    public String getChatResponse(String userPrompt){
+    public String getQuizResponse(String quizTopic){
 
-        ChatRequest request = new ChatRequest(
+        QuizRequest request = new QuizRequest(
                 model,
-                List.of(new ChatMessage("user", userPrompt))
+                List.of(new QuizTopic("user", quizTopic))
         );
 
-        ChatResponse response = webClient.post()
+        QuizResponse response = webClient.post()
                 .uri("/chat/completions")
                 .bodyValue(request)
                 .retrieve()
-                .bodyToMono(ChatResponse.class)
+                .bodyToMono(QuizResponse.class)
                 .block();
 
         if (response == null || response.choices().isEmpty()){

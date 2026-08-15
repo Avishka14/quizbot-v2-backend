@@ -1,11 +1,14 @@
 package com.quizbotv2.service;
 
-import com.quizbotv2.dto.ChatMessage;
-import com.quizbotv2.dto.ChatRequest;
-import com.quizbotv2.dto.ChatResponse;
+import com.quizbotv2.dto.*;
+import com.quizbotv2.exception.QuizGenerationException;
+import com.quizbotv2.helper.PromptBuildHelper;
+import com.quizbotv2.helper.QuizValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.ObjectMapper;
+
 
 import java.util.List;
 
@@ -13,33 +16,52 @@ import java.util.List;
 public class OpenRouterService {
 
     private final WebClient webClient;
+    private final ObjectMapper objectMapper;
+    private final PromptBuildHelper promptBuildHelper;
+    private final QuizValidator quizValidator;
 
     @Value("${openrouter.model}")
     private String model;
 
-    public OpenRouterService(WebClient webClient) {
+    public OpenRouterService(WebClient webClient, ObjectMapper objectMapper, PromptBuildHelper promptBuildHelper, QuizValidator quizValidator) {
         this.webClient = webClient;
+        this.objectMapper = objectMapper;
+        this.promptBuildHelper = promptBuildHelper;
+        this.quizValidator = quizValidator;
     }
 
-    public String getChatResponse(String userPrompt){
+    public QuizResult generateQuiz(QuizGenerationRequest request){
 
-        ChatRequest request = new ChatRequest(
+        QuizRequest apiReqesut = new QuizRequest(
                 model,
-                List.of(new ChatMessage("user", userPrompt))
+                List.of(
+                        new QuizTopic("system", promptBuildHelper.buildSystemPrompt()), //instructions for Ai Model
+                        new QuizTopic("user", promptBuildHelper.buildUserPrompt(request)) //actual quiz request
+                )
         );
 
-        ChatResponse response = webClient.post()
+        String rawContent = callModel(apiReqesut);
+        String cleanJson = promptBuildHelper.sanitizeJsonResponse(rawContent);
+        QuizResult result = quizValidator.parseQuizResponse(cleanJson, request.topic(), objectMapper);
+        quizValidator.validateQuiz(result);
+        return result;
+
+    }
+
+    private String callModel(QuizRequest apiRequest){
+
+        QuizResponse response = webClient.post()
                 .uri("/chat/completions")
-                .bodyValue(request)
+                .bodyValue(apiRequest) // Spring/WebClient converts java object to a JSON automatically
                 .retrieve()
-                .bodyToMono(ChatResponse.class)
+                .bodyToMono(QuizResponse.class)
                 .block();
 
-        if (response == null || response.choices().isEmpty()){
-            return "No response from model.";
+        if (response == null || response.choices() == null || response.choices().isEmpty()) {
+            throw new QuizGenerationException("No response from model.");
         }
-        return response.choices().get(0).message().content();
 
+        return response.choices().get(0).message().content();
     }
 
 }

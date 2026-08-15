@@ -1,6 +1,9 @@
 package com.quizbotv2.Controller;
 
+import com.quizbotv2.dto.QuizGenerationRequest;
+import com.quizbotv2.dto.QuizResult;
 import com.quizbotv2.service.OpenRouterService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,16 +11,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("api/chat")
-public class ChatController {
+public class QuizController {
 
     private final OpenRouterService openRouterService;
 
-    public ChatController(OpenRouterService openRouterService) {
+    public QuizController(OpenRouterService openRouterService) {
         this.openRouterService = openRouterService;
     }
 
-    @PostMapping
-    public String chat(@RequestBody String prompt){
-        return openRouterService.getChatResponse(prompt);
+    @PostMapping("/generate")
+    public ResponseEntity<QuizResult> generateQuiz(@RequestBody QuizGenerationRequest request) {
+        QuizResult result = openRouterService.generateQuiz(request);
+        return ResponseEntity.ok(result);
     }
 }

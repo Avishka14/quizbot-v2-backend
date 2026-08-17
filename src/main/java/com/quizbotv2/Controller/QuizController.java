@@ -1,7 +1,7 @@
 package com.quizbotv2.Controller;
 
-import com.quizbotv2.dto.QuizGenerationRequest;
-import com.quizbotv2.dto.QuizResult;
+import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
+import com.quizbotv2.dto.quizdtos.QuizResult;
 import com.quizbotv2.service.OpenRouterService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

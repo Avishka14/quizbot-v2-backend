@@ -1,4 +1,4 @@
-package com.quizbotv2.dto;
+package com.quizbotv2.dto.quizdtos;
 
 import java.util.List;
 

@@ -1,6 +1,10 @@
 package com.quizbotv2.service;
 
-import com.quizbotv2.dto.*;
+import com.quizbotv2.dto.quizdtos.QuizRequest;
+import com.quizbotv2.dto.quizdtos.QuizResponse;
+import com.quizbotv2.dto.quizdtos.QuizResult;
+import com.quizbotv2.dto.quizdtos.QuizTopic;
+import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
 import com.quizbotv2.exception.QuizGenerationException;
 import com.quizbotv2.helper.PromptBuildHelper;
 import com.quizbotv2.helper.QuizValidator;

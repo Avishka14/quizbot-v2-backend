@@ -1,6 +1,6 @@
 package com.quizbotv2.helper;
 
-import com.quizbotv2.dto.QuizGenerationRequest;
+import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
 import org.springframework.stereotype.Component;
 
 @Component

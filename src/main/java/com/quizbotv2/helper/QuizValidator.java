@@ -1,7 +1,7 @@
 package com.quizbotv2.helper;
 
-import com.quizbotv2.dto.QuizQuestion;
-import com.quizbotv2.dto.QuizResult;
+import com.quizbotv2.dto.quizdtos.QuizQuestion;
+import com.quizbotv2.dto.quizdtos.QuizResult;
 import com.quizbotv2.exception.QuizGenerationException;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.type.TypeReference;

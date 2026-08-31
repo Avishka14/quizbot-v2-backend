@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/chat")
+@RequestMapping("api/quiz")
 public class QuizController {
 
     private final OpenRouterService openRouterService;
@@ -24,4 +24,6 @@ public class QuizController {
         QuizResult result = openRouterService.generateQuiz(request);
         return ResponseEntity.ok(result);
     }
+
+
 }

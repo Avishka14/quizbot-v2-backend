@@ -1,6 +1,8 @@
 package com.quizbotv2.service;
 
-import com.quizbotv2.dto.userdtos.UserDTO;
+
+import com.quizbotv2.enums.Role;
+import com.quizbotv2.helper.CustomOIDCAuthUser;
 import com.quizbotv2.model.User;
 import com.quizbotv2.repo.UserRepository;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -29,7 +31,7 @@ public class AuthService extends OidcUserService {
         String name = oidcUser.getFullName();
         String picture = oidcUser.getPicture();
 
-        userRepository.findByGoogleSub(sub)
+        User authUser = userRepository.findByGoogleSub(sub)
                 .map(existing -> {
                     existing.setEmail(email);
                     existing.setName(name);
@@ -45,8 +47,9 @@ public class AuthService extends OidcUserService {
                     user.setName(name);
                     user.setFirstLogin(Instant.now());
                     user.setLastLogin(Instant.now());
+                    user.setRole(Role.USER);
                     return userRepository.save(user);
                 });
-        return oidcUser;
+        return new CustomOIDCAuthUser(authUser, oidcUser.getIdToken(), oidcUser.getUserInfo());
     }
 }

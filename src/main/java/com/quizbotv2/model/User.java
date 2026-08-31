@@ -1,5 +1,6 @@
 package com.quizbotv2.model;
 
+import com.quizbotv2.enums.Role;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -32,4 +33,9 @@ public class User {
     @Column(nullable = false)
     private Instant firstLogin;
     private Instant lastLogin;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
 }

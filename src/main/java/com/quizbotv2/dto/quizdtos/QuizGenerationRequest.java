@@ -1,7 +1,7 @@
 package com.quizbotv2.dto.quizdtos;
 
 
-import com.quizbotv2.dto.enums.Difficulty;
+import com.quizbotv2.enums.Difficulty;
 
 public record QuizGenerationRequest(
         String topic,

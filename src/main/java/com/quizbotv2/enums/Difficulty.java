@@ -1,4 +1,4 @@
-package com.quizbotv2.dto.enums;
+package com.quizbotv2.enums;
 
 public enum Difficulty {
     EASY,

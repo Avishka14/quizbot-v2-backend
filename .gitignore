@@ -20,5 +20,5 @@ target/
 *.ipr
 
 .env
-
+/logs
 

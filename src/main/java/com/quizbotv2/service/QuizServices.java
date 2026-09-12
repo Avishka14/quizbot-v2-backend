@@ -51,15 +51,6 @@ public class QuizServices {
                 input.endTime()
         );
 
-        log.info(
-                "Quiz result calculated successfully: userId={}, quizId={}, mark={}, questionCount={}, totalTime={}",
-                userId,
-                quizId,
-                mark,
-                questionCount,
-                totalTime
-        );
-
         return new UserQuizResultDTO(
                 userId,
                 mark,

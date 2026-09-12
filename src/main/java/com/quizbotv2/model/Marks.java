@@ -6,26 +6,33 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "quizzes")
+@Table(name = "marks")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Quizzes {
+public class Marks {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "quizzes_id", nullable = false)
+    private Quizzes quizzes;
+
+    @Column(nullable = false)
+    private int mark;
+
+    @Column(nullable = false)
+    private String totalTime;
+
+    @Column(nullable = false)
+    private String questionCount;
 
 }

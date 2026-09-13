@@ -1,22 +1,29 @@
 package com.quizbotv2.Controller;
 
 import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
-import com.quizbotv2.dto.quizdtos.QuizResponse;
+import com.quizbotv2.dto.quizdtos.QuizResult;
 import com.quizbotv2.dto.userdtos.UserQuizInputsDTO;
 import com.quizbotv2.dto.userdtos.UserQuizResultDTO;
+import com.quizbotv2.helper.CustomOIDCAuthUser;
+import com.quizbotv2.service.OpenRouterService;
 import com.quizbotv2.service.QuizServices;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final QuizServices quizServices;
+    private final OpenRouterService openRouterService;
 
-    public UserController(QuizServices quizServices) {
+    public UserController(QuizServices quizServices, OpenRouterService openRouterService) {
         this.quizServices = quizServices;
+        this.openRouterService = openRouterService;
     }
 
     @GetMapping("/home")
@@ -24,12 +31,18 @@ public class UserController {
         return "Welcome, " +principal.getFullName() + " " + principal.getEmail() + " ";
     }
 
-    @PostMapping("/quizreq")
-    public void getQuiz(@RequestBody QuizGenerationRequest request){
+    @GetMapping("/quizreq")
+    public void getQuiz(
 
-        System.out.println("Topic" + request.topic());
-        System.out.println("Difficult" + request.difficulty());
-        System.out.println("Count" + request.questionCount());
+            Authentication authentication
+    ) {
+
+        CustomOIDCAuthUser principal =
+                (CustomOIDCAuthUser) authentication.getPrincipal();
+
+        UUID userId = principal.getUser().getId();
+
+        System.out.println(userId);
 
     }
 

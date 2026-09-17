@@ -7,6 +7,7 @@ import com.quizbotv2.dto.userdtos.UserQuizResultDTO;
 import com.quizbotv2.helper.CustomOIDCAuthUser;
 import com.quizbotv2.service.OpenRouterService;
 import com.quizbotv2.service.QuizServices;
+import com.quizbotv2.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -19,11 +20,12 @@ import java.util.UUID;
 public class UserController {
 
     private final QuizServices quizServices;
-    private final OpenRouterService openRouterService;
+    private final UserService userService;
 
-    public UserController(QuizServices quizServices, OpenRouterService openRouterService) {
+
+    public UserController(QuizServices quizServices, UserService userService) {
         this.quizServices = quizServices;
-        this.openRouterService = openRouterService;
+        this.userService = userService;
     }
 
     @GetMapping("/home")
@@ -31,18 +33,18 @@ public class UserController {
         return "Welcome, " +principal.getFullName() + " " + principal.getEmail() + " ";
     }
 
-    @GetMapping("/quizreq")
-    public void getQuiz(
-
-            Authentication authentication
+    @PostMapping("/test")
+    public QuizResult getQuiz(
+            @RequestBody QuizGenerationRequest quizGenerationRequest,
+            @RequestParam UUID userId
+//            Authentication authentication
     ) {
 
-        CustomOIDCAuthUser principal =
-                (CustomOIDCAuthUser) authentication.getPrincipal();
+//        CustomOIDCAuthUser principal = (CustomOIDCAuthUser) authentication.getPrincipal();
 
-        UUID userId = principal.getUser().getId();
+//        UUID userId = principal.getUser().getId();
 
-        System.out.println(userId);
+        return userService.generateQuizWithUserId(quizGenerationRequest, userId);
 
     }
 

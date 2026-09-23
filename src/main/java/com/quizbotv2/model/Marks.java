@@ -27,12 +27,12 @@ public class Marks {
     private Quizzes quizzes;
 
     @Column(nullable = false)
-    private int mark;
+    private String mark;
 
     @Column(nullable = false)
     private String totalTime;
 
     @Column(nullable = false)
-    private String questionCount;
+    private int questionCount;
 
 }

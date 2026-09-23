@@ -50,9 +50,7 @@ public class UserController {
 
     @PostMapping("/calculate")
     public UserQuizResultDTO calculateResult(@RequestBody UserQuizInputsDTO quizInputsDTO){
-
         return quizServices.calculateResult(quizInputsDTO);
-
     }
 
 

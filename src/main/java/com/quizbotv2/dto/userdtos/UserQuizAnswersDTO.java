@@ -2,9 +2,10 @@ package com.quizbotv2.dto.userdtos;
 
 import com.quizbotv2.model.Question;
 
-public record UserQuestionsDTO(
+public record UserQuizAnswersDTO(
         Long id,
-        String question,
+        Question question,
+        boolean isCorrect,
         String correctAnswer,
         String userAnswer
 ) {

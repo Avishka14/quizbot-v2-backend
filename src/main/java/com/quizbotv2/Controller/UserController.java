@@ -33,7 +33,7 @@ public class UserController {
         return "Welcome, " +principal.getFullName() + " " + principal.getEmail() + " ";
     }
 
-    @PostMapping("/test")
+    @PostMapping("/getquiz")
     public QuizResult getQuiz(
             @RequestBody QuizGenerationRequest quizGenerationRequest,
             @RequestParam UUID userId
@@ -44,11 +44,11 @@ public class UserController {
 
 //        UUID userId = principal.getUser().getId();
 
-        return userService.generateQuizWithUserId(quizGenerationRequest, userId);
+        return quizServices.generateQuizWithUserId(quizGenerationRequest, userId);
 
     }
 
-    @PostMapping("/calculate")
+    @PostMapping("/test")
     public UserQuizResultDTO calculateResult(@RequestBody UserQuizInputsDTO quizInputsDTO){
         return quizServices.calculateResult(quizInputsDTO);
     }

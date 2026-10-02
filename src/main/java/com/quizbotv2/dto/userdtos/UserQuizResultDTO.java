@@ -9,19 +9,4 @@ public record UserQuizResultDTO(
         int questionCount
 ) {
 
-    public UUID getId() {
-        return id;
-    }
-
-    public String getMark() {
-        return mark;
-    }
-
-    public String getTotalTime() {
-        return totalTime;
-    }
-
-    public int getQuestionCount() {
-        return questionCount;
-    }
 }

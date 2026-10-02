@@ -23,13 +23,6 @@ public class Answers {
     private Question question;
 
     @Column(nullable = false)
-    private boolean isCorrect;
-
-    @Column(nullable = false)
     private String correctAnswer;
-
-    @Column(nullable = false)
-    private String userAnswer;
-
 
 }

@@ -22,7 +22,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login**", "/error", "/api/quiz/generate", "/api/users/test").permitAll()
+                        .requestMatchers("/", "/login**", "/error", "/api/quiz/generate", "/api/users/test" , "/api/users/getquiz").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

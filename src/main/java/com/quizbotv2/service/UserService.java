@@ -3,6 +3,7 @@ package com.quizbotv2.service;
 import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
 import com.quizbotv2.dto.quizdtos.QuizQuestion;
 import com.quizbotv2.dto.quizdtos.QuizResult;
+import com.quizbotv2.dto.userdtos.UserDTO;
 import com.quizbotv2.model.Question;
 import com.quizbotv2.model.Quizzes;
 import com.quizbotv2.model.User;
@@ -39,6 +40,7 @@ public class UserService {
         this.quizzesRepository = quizzesRepository;
         this.questionRepository = questionRepository;
     }
+
 
 
 

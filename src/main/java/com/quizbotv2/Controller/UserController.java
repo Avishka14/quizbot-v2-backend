@@ -2,9 +2,11 @@ package com.quizbotv2.Controller;
 
 import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
 import com.quizbotv2.dto.quizdtos.QuizResult;
+import com.quizbotv2.dto.userdtos.UserDTO;
 import com.quizbotv2.dto.userdtos.UserQuizInputsDTO;
 import com.quizbotv2.dto.userdtos.UserQuizResultDTO;
 import com.quizbotv2.helper.CustomOIDCAuthUser;
+import com.quizbotv2.model.User;
 import com.quizbotv2.service.OpenRouterService;
 import com.quizbotv2.service.QuizServices;
 import com.quizbotv2.service.UserService;
@@ -13,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -48,9 +51,18 @@ public class UserController {
 
     }
 
-    @PostMapping("/test")
+    @PostMapping("/calculate")
     public UserQuizResultDTO calculateResult(@RequestBody UserQuizInputsDTO quizInputsDTO){
         return quizServices.calculateResult(quizInputsDTO);
+    }
+
+    @GetMapping("/me")
+    public Map<String, Object> me(@AuthenticationPrincipal OidcUser user) {
+        return Map.of(
+                "name", user.getFullName(),
+                "email", user.getEmail(),
+                "picture", user.getPicture()
+        );
     }
 
 

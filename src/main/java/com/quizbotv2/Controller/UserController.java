@@ -10,6 +10,7 @@ import com.quizbotv2.model.User;
 import com.quizbotv2.service.OpenRouterService;
 import com.quizbotv2.service.QuizServices;
 import com.quizbotv2.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -24,11 +25,13 @@ public class UserController {
 
     private final QuizServices quizServices;
     private final UserService userService;
+    private final OpenRouterService openRouterService;
 
 
-    public UserController(QuizServices quizServices, UserService userService) {
+    public UserController(QuizServices quizServices, UserService userService, OpenRouterService openRouterService) {
         this.quizServices = quizServices;
         this.userService = userService;
+        this.openRouterService = openRouterService;
     }
 
     @GetMapping("/home")
@@ -36,34 +39,23 @@ public class UserController {
         return "Welcome, " +principal.getFullName() + " " + principal.getEmail() + " ";
     }
 
-    @PostMapping("/getquiz")
-    public QuizResult getQuiz(
-            @RequestBody QuizGenerationRequest quizGenerationRequest,
-            @RequestParam UUID userId
-//            Authentication authentication
-    ) {
 
-//        CustomOIDCAuthUser principal = (CustomOIDCAuthUser) authentication.getPrincipal();
+    @GetMapping("/user")
+    public ResponseEntity<?> userData(@AuthenticationPrincipal CustomOIDCAuthUser principle){
+        if(principle == null){
+            return ResponseEntity.status(401).build();
+        }
 
-//        UUID userId = principal.getUser().getId();
+        User user = principle.getUser();
 
-        return quizServices.generateQuizWithUserId(quizGenerationRequest, userId);
-
-    }
-
-    @PostMapping("/calculate")
-    public UserQuizResultDTO calculateResult(@RequestBody UserQuizInputsDTO quizInputsDTO){
-        return quizServices.calculateResult(quizInputsDTO);
-    }
-
-    @GetMapping("/me")
-    public Map<String, Object> me(@AuthenticationPrincipal OidcUser user) {
-        return Map.of(
-                "name", user.getFullName(),
+        return ResponseEntity.ok(Map.of(
+                "name", user.getName(),
                 "email", user.getEmail(),
-                "picture", user.getPicture()
-        );
+                "pictureUrl", user.getPictureUrl()
+        ));
     }
+
+
 
 
 }

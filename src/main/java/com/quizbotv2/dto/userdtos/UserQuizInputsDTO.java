@@ -8,7 +8,6 @@ public record UserQuizInputsDTO(
         UUID id,
         Long quizId,
         List<UserQuestionsDTO> questionsDTOS,
-        LocalDateTime startTime,
         LocalDateTime endTime
 
 ) {

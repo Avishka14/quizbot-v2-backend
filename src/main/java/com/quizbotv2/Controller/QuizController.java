@@ -53,7 +53,7 @@ public class QuizController {
     }
 
 
-    @PostMapping("/calculate")
+    @PostMapping("/result")
     public UserQuizResultDTO calculateResult(@RequestBody UserQuizInputsDTO quizInputsDTO){
         return quizServices.calculateResult(quizInputsDTO);
     }

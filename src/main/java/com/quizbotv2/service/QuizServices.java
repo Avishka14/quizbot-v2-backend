@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -50,32 +51,45 @@ public class QuizServices {
     @Transactional
     public UserQuizResultDTO calculateResult(UserQuizInputsDTO input) {
 
-        validateQuizInput(input);
-
         UUID userId = input.id();
         Long quizId = input.quizId();
 
-        int questionCount = input.questionsDTOS().size();
+        Optional<Quizzes> quizzesOptional = quizzesRepository.findById(quizId);
 
-        String mark = String.valueOf(QuizCalculationHelper.calculateMark(input.questionsDTOS()));
+        if(quizzesOptional.isPresent()){
 
-        String totalTime = QuizCalculationHelper.calculateTotalTime(
-                input.startTime(),
-                input.endTime()
-        );
+            Quizzes quizzes = quizzesOptional.get();
+            LocalDateTime startDateTime = quizzes.getCreatedAt();
 
-        UserQuizResultDTO quizResultDTO = new UserQuizResultDTO(
-                userId,
-                mark,
-                totalTime,
-                questionCount
-        );
+            validateQuizInput(input, startDateTime);
 
-        saveMarksInDb(quizResultDTO, userId, quizId);
-        return quizResultDTO;
+            int questionCount = input.questionsDTOS().size();
+
+            String mark = String.valueOf(QuizCalculationHelper.calculateMark(input.questionsDTOS()));
+
+            String totalTime = QuizCalculationHelper.calculateTotalTime(
+                    startDateTime,
+                    input.endTime()
+            );
+
+            UserQuizResultDTO quizResultDTO = new UserQuizResultDTO(
+                    userId,
+                    mark,
+                    totalTime,
+                    questionCount
+            );
+
+            saveMarksInDb(quizResultDTO, userId, quizId);
+            return quizResultDTO;
+
+        }else{
+            log.error("Quiz result calculation failed: Quiz ID is invalid ID: {}", quizId);
+            throw new QuizGenerationException("Quiz result calculation failed: Quiz ID is invalid ID: {}, quizId");
+        }
+
     }
 
-    private void validateQuizInput(UserQuizInputsDTO input) {
+    private void validateQuizInput(UserQuizInputsDTO input, LocalDateTime startTime) {
 
         if (input == null) {
             log.error("Quiz result calculation failed: input is null");
@@ -111,7 +125,7 @@ public class QuizServices {
             );
         }
 
-        QuizCalculationHelper.validateQuizTime(input);
+        QuizCalculationHelper.validateQuizTime(input, startTime);
     }
 
 

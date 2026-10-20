@@ -18,9 +18,9 @@ public final class QuizCalculationHelper {
         // Utility class
     }
 
-    public static void validateQuizTime(UserQuizInputsDTO input) {
+    public static void validateQuizTime(UserQuizInputsDTO input, LocalDateTime startTime) {
 
-        if (input.startTime() == null || input.endTime() == null) {
+        if ( startTime == null || input.endTime() == null) {
 
             log.error(
                     "Quiz result calculation failed: missing start or end time. userId={}, quizId={}",
@@ -33,12 +33,12 @@ public final class QuizCalculationHelper {
             );
         }
 
-        if (input.endTime().isBefore(input.startTime())) {
+        if (input.endTime().isBefore(startTime)) {
 
             log.error(
                     "Quiz result calculation failed: endTime={} is before startTime={}. userId={}, quizId={}",
                     input.endTime(),
-                    input.startTime(),
+                    startTime,
                     input.id(),
                     input.quizId()
             );

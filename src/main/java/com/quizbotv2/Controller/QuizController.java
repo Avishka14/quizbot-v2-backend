@@ -10,6 +10,7 @@ import com.quizbotv2.service.OpenRouterService;
 import com.quizbotv2.service.QuizServices;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -53,9 +54,31 @@ public class QuizController {
     }
 
 
-    @PostMapping("/result")
-    public UserQuizResultDTO calculateResult(@RequestBody UserQuizInputsDTO quizInputsDTO){
-        return quizServices.calculateResult(quizInputsDTO);
+    @PostMapping("/test")
+    public String calculateResult(
+            @RequestBody UserQuizInputsDTO quizInputsDTO,
+            @AuthenticationPrincipal CustomOIDCAuthUser principle){
+
+        if(principle == null ){
+            return "No User ID";
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }else{
+            User user = principle.getUser();
+
+            UserQuizInputsDTO userQuizInputsDTO = new UserQuizInputsDTO(
+                    user.getId(),
+                    quizInputsDTO.quizId(),
+                    quizInputsDTO.questionsDTOS(),
+                    quizInputsDTO.endTime()
+            );
+
+            System.out.println(userQuizInputsDTO);
+            return "user present";
+
+//            UserQuizResultDTO userQuizResultDTO =  quizServices.calculateResult(userQuizInputsDTO);
+//            return ResponseEntity.ok(userQuizResultDTO);
+        }
+
     }
 
 

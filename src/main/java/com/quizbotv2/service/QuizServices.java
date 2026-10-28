@@ -178,6 +178,7 @@ public class QuizServices {
         List<QuizQuestion> generatedQuestions = quizResult.questions();
 
         Quizzes quiz = new Quizzes();
+        quiz.setId(quizResult.id());
         quiz.setUser(user);
         quiz.setCreatedAt(LocalDateTime.now());
 

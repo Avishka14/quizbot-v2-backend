@@ -52,7 +52,8 @@ public class QuizValidator {
                         return new QuizQuestion(id, q.question(), q.options(), q.correctAnswer());
                     }).toList();
 
-            return new QuizResult(topic, questions);
+            long generatedQuizId = java.util.concurrent.ThreadLocalRandom.current().nextLong(10000000L, 100000000L);
+            return new QuizResult(generatedQuizId, topic, questions);
 
         } catch (Exception e) {
             log.error("Model response was not valid quiz JSON ERROR", e);

@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("api/quiz")
 public class QuizController {
@@ -54,7 +56,7 @@ public class QuizController {
     }
 
 
-    @PostMapping("/test")
+    @PostMapping("/getmarks")
     public String calculateResult(
             @RequestBody UserQuizInputsDTO quizInputsDTO,
             @AuthenticationPrincipal CustomOIDCAuthUser principle){
@@ -64,12 +66,13 @@ public class QuizController {
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }else{
             User user = principle.getUser();
+            LocalDateTime submitDateTime = LocalDateTime.now();
 
             UserQuizInputsDTO userQuizInputsDTO = new UserQuizInputsDTO(
                     user.getId(),
                     quizInputsDTO.quizId(),
                     quizInputsDTO.questionsDTOS(),
-                    quizInputsDTO.endTime()
+                    submitDateTime
             );
 
             System.out.println(userQuizInputsDTO);

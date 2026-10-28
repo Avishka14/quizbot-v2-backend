@@ -2,6 +2,7 @@ package com.quizbotv2.helper;
 
 import com.quizbotv2.dto.quizdtos.QuizQuestion;
 import com.quizbotv2.dto.quizdtos.QuizResult;
+import com.quizbotv2.dto.quizdtos.RawQuestions;
 import com.quizbotv2.exception.QuizGenerationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -9,7 +10,10 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Component
@@ -29,12 +33,28 @@ public class QuizValidator {
                 );
             }
 
-            List<QuizQuestion> questions = mapper.convertValue(  //Converts JSON array into a List
-                    root.get("questions"),
-                    new TypeReference<List<QuizQuestion>>() {}
+            // converting JSON into a list of objects
+            List<RawQuestions> parsed = mapper.convertValue(
+                    questionsNode,
+                    new TypeReference<List<RawQuestions>>() {
+
+                    }
             );
 
-            return new QuizResult(topic, questions);
+            Set<Integer> usedIds = new HashSet<>();
+
+            List<QuizQuestion> questions = parsed.stream()
+                    .map(q -> {
+                        int id;
+                        do {
+                            id = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
+                        } while (!usedIds.add(id));
+                        return new QuizQuestion(id, q.question(), q.options(), q.correctAnswer());
+                    }).toList();
+
+            long generatedQuizId = java.util.concurrent.ThreadLocalRandom.current().nextLong(10000000L, 100000000L);
+            return new QuizResult(generatedQuizId, topic, questions);
+
         } catch (Exception e) {
             log.error("Model response was not valid quiz JSON ERROR", e);
             throw new QuizGenerationException("Model response was not valid quiz JSON", e);

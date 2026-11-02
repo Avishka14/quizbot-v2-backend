@@ -10,11 +10,13 @@ import com.quizbotv2.helper.PromptBuildHelper;
 import com.quizbotv2.helper.QuizValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import tools.jackson.databind.ObjectMapper;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -29,6 +31,9 @@ public class OpenRouterService {
     @Value("${openrouter.model}")
     private String model;
 
+    @Value("${openrouter.fallback-models}")
+    private String fallbackModels;
+
     public OpenRouterService(WebClient webClient, ObjectMapper objectMapper, PromptBuildHelper promptBuildHelper, QuizValidator quizValidator) {
         this.webClient = webClient;
         this.objectMapper = objectMapper;
@@ -38,8 +43,13 @@ public class OpenRouterService {
 
     public QuizResult generateQuiz(QuizGenerationRequest request){
 
+        List<String> models  = new ArrayList<>();
+        models.add(model);
+        models.add(fallbackModels);
+
         QuizRequest apiReqesut = new QuizRequest(
                 model,
+                models,
                 List.of(
                         new QuizTopic("system", promptBuildHelper.buildSystemPrompt()), //instructions for Ai Model
                         new QuizTopic("user", promptBuildHelper.buildUserPrompt(request)) //actual quiz request
@@ -60,6 +70,11 @@ public class OpenRouterService {
                 .uri("/chat/completions")
                 .bodyValue(apiRequest) // Spring/WebClient converts java object to a JSON automatically
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, resp ->
+                        resp.bodyToMono(String.class).map(body -> {
+                            log.error("OpenRouter {} -> {}", resp.statusCode(), body);
+                            return new QuizGenerationException("OpenRouter error: " + body);
+                        }))
                 .bodyToMono(QuizResponse.class)
                 .block();
 

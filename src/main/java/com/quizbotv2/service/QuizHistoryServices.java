@@ -19,7 +19,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class QuizServices {
+public class QuizHistoryServices {
 
     private final UserRepository userRepository;
     private final QuizzesRepository quizzesRepository;
@@ -28,7 +28,7 @@ public class QuizServices {
     private final AnswerRepository answerRepository;
 
 
-    public QuizServices(UserRepository userRepository, QuizzesRepository quizzesRepository, QuestionRepository questionRepository, MarkRepository markRepository, AnswerRepository answerRepository) {
+    public QuizHistoryServices(UserRepository userRepository, QuizzesRepository quizzesRepository, QuestionRepository questionRepository, MarkRepository markRepository, AnswerRepository answerRepository) {
         this.userRepository = userRepository;
         this.quizzesRepository = quizzesRepository;
         this.questionRepository = questionRepository;
@@ -45,7 +45,7 @@ public class QuizServices {
                     return new UserExceptions("User not found: " + userId);
                 });
 
-        List<Quizzes> quizzesList = quizzesRepository.findQuizzesByUser(userId);
+        List<Quizzes> quizzesList = quizzesRepository.findByUserId(userId);
 
         if(quizzesList.isEmpty()){
             log.info("Not found any quizzes for user: {}", userId);
@@ -63,6 +63,8 @@ public class QuizServices {
                             log.error("Marks not found for user {} quiz {}", userId, quiz.getId());
                             return new UserExceptions("Marks not found for quiz: " + quiz.getId());
                         });
+
+
 
                 // 2. Questions + correct answers for this quiz
                 List<UserQuizAnswersDTO> answersDTOS = new ArrayList<>();

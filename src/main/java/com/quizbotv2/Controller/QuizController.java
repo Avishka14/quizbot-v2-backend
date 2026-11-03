@@ -57,13 +57,12 @@ public class QuizController {
 
 
     @PostMapping("/getmarks")
-    public String calculateResult(
+    public ResponseEntity<?> calculateResult(
             @RequestBody UserQuizInputsDTO quizInputsDTO,
             @AuthenticationPrincipal CustomOIDCAuthUser principle){
 
         if(principle == null ){
-            return "No User ID";
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }else{
             User user = principle.getUser();
             LocalDateTime submitDateTime = LocalDateTime.now();
@@ -75,11 +74,8 @@ public class QuizController {
                     submitDateTime
             );
 
-            System.out.println(userQuizInputsDTO);
-            return "user present";
-
-//            UserQuizResultDTO userQuizResultDTO =  quizServices.calculateResult(userQuizInputsDTO);
-//            return ResponseEntity.ok(userQuizResultDTO);
+            UserQuizResultDTO userQuizResultDTO =  quizServices.calculateResult(userQuizInputsDTO);
+            return ResponseEntity.ok(userQuizResultDTO);
         }
 
     }

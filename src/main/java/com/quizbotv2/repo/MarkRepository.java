@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface MarkRepository extends JpaRepository<Marks, Long> {
     Optional<Marks> findByQuizzesId(Long quizId);
+    Optional<Marks> findByUserIdAndQuizzesId(UUID userId, Long quizzesId);
 }

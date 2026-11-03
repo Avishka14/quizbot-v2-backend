@@ -1,5 +1,6 @@
 package com.quizbotv2.service;
 
+
 import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
 import com.quizbotv2.dto.quizdtos.QuizQuestion;
 import com.quizbotv2.dto.quizdtos.QuizResult;
@@ -23,30 +24,130 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class QuizServices {
+public class UserQuizService {
 
-
-    private final QuestionRepository questionRepository;
-    private final QuizzesRepository quizzesRepository;
-    private final UserRepository userRepository;
-    private final MarkRepository markRepository;
     private final OpenRouterService openRouterService;
+    private final UserRepository userRepository;
+    private final QuizzesRepository quizzesRepository;
+    private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
+    private final MarkRepository markRepository;
 
-
-    public QuizServices(
-            QuestionRepository questionRepository,
+    public UserQuizService(
+            OpenRouterService openRouterService,
+            UserRepository userRepository,
             QuizzesRepository quizzesRepository,
-            UserRepository userRepository, MarkRepository markRepository, OpenRouterService openRouterService, AnswerRepository answerRepository
+            QuestionRepository questionRepository, AnswerRepository answerRepository, MarkRepository markRepository
     ) {
-        this.questionRepository = questionRepository;
-        this.quizzesRepository = quizzesRepository;
-        this.userRepository = userRepository;
-        this.markRepository = markRepository;
         this.openRouterService = openRouterService;
+        this.userRepository = userRepository;
+        this.quizzesRepository = quizzesRepository;
+        this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
+        this.markRepository = markRepository;
     }
 
+    //    Generates a quiz for a logged-in user and saves
+    @Transactional
+    public QuizResult generateQuizWithUserId(
+            QuizGenerationRequest quizGenerationRequest,
+            UUID userId
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("Quiz generation failed - user not found: {}", userId);
+                    return new UserExceptions("User not found: " + userId);
+                });
+
+        QuizResult quizResult = openRouterService.generateQuiz(quizGenerationRequest);
+
+        if (quizResult == null) {
+            log.error("Quiz generation returned null result for user: {}", userId);
+            throw new QuizGenerationException("Quiz generation returned an empty result");
+        }
+
+        List<QuizQuestion> generatedQuestions = quizResult.questions();
+
+        Quizzes quiz = new Quizzes();
+        quiz.setId(quizResult.id());
+        quiz.setUser(user);
+        quiz.setCreatedAt(LocalDateTime.now());
+
+        //save new quiz
+        Quizzes savedQuiz = quizzesRepository.save(quiz);
+
+        saveQuestionsInDb(generatedQuestions, savedQuiz);
+        return quizResult;
+    }
+
+    //save questions each in db
+    private void saveQuestionsInDb(List<QuizQuestion> generatedQuestions, Quizzes quiz ) {
+
+        List<Question> questions = new ArrayList<>();
+        List<Answers> answersList = new ArrayList<>();
+
+        for (QuizQuestion quizQuestion : generatedQuestions) {
+
+            if (quizQuestion == null ||
+                    quizQuestion.question() == null ||
+                    quizQuestion.question().isBlank() ||
+                    quizQuestion.options() == null ||
+                    quizQuestion.correctAnswer() == null){
+
+                continue;
+            }
+
+            Question question = new Question();
+
+            question.setQuestionTitle( quizQuestion.question());
+            question.setQuizzes(quiz);
+            questions.add(question);
+
+            Answers answers = new Answers();
+            answers.setQuestion(question);
+            answers.setCorrectAnswer(quizQuestion.correctAnswer());
+            answersList.add(answers);
+
+        }
+
+        if (questions.isEmpty()) {
+            log.error("No valid questions available to save for Quiz ID: {}", quiz.getId() );
+            throw new QuizGenerationException("No valid questions available to save" );
+        }
+
+        try {
+
+            questionRepository.saveAll(questions);
+
+            //save answers in db
+            saveAnswersInDB(answersList, quiz);
+
+        } catch (DataAccessException e) {
+            log.error("Failed to save quiz questions. quizId={}", quiz.getId(), e );
+
+            throw new QuizGenerationException("Failed to save quiz questions", e);
+        }
+    }
+
+    // save all answers in database
+    private void saveAnswersInDB(List<Answers> answers, Quizzes quiz){
+
+        if(answers.isEmpty()){
+            log.error("No valid answers available to save for Quiz ID: {}", quiz.getId() );
+            throw new QuizGenerationException("No valid answers available to save" );
+        }
+
+        try{
+            answerRepository.saveAll(answers);
+
+        } catch (DataAccessException e) {
+            log.error("Failed to save answers. quizId={}", quiz.getId(), e);
+
+            throw new QuizGenerationException("Failed to save quiz answers", e);
+        }
+
+    }
 
     @Transactional
     public UserQuizResultDTO calculateResult(UserQuizInputsDTO input) {
@@ -157,109 +258,7 @@ public class QuizServices {
     }
 
 
-    //    Generates a quiz for a logged-in user and saves
-    @Transactional
-    public QuizResult generateQuizWithUserId(
-            QuizGenerationRequest quizGenerationRequest,
-            UUID userId
-    ) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.error("Quiz generation failed - user not found: {}", userId);
-                    return new UserExceptions("User not found: " + userId);
-                });
-
-        QuizResult quizResult = openRouterService.generateQuiz(quizGenerationRequest);
-
-        if (quizResult == null) {
-            log.error("Quiz generation returned null result for user: {}", userId);
-            throw new QuizGenerationException("Quiz generation returned an empty result");
-        }
-
-        List<QuizQuestion> generatedQuestions = quizResult.questions();
-
-        Quizzes quiz = new Quizzes();
-        quiz.setId(quizResult.id());
-        quiz.setUser(user);
-        quiz.setCreatedAt(LocalDateTime.now());
-
-        //save new quiz
-        Quizzes savedQuiz = quizzesRepository.save(quiz);
-
-        saveQuestionsInDb(generatedQuestions, savedQuiz);
-        return quizResult;
-    }
-
-
-
-    //save questions each in db
-    private void saveQuestionsInDb(List<QuizQuestion> generatedQuestions, Quizzes quiz ) {
-
-        List<Question> questions = new ArrayList<>();
-        List<Answers> answersList = new ArrayList<>();
-
-        for (QuizQuestion quizQuestion : generatedQuestions) {
-
-            if (quizQuestion == null ||
-                    quizQuestion.question() == null ||
-                    quizQuestion.question().isBlank() ||
-                    quizQuestion.options() == null ||
-                    quizQuestion.correctAnswer() == null){
-
-                continue;
-            }
-
-            Question question = new Question();
-
-            question.setQuestionTitle( quizQuestion.question());
-            question.setQuizzes(quiz);
-            questions.add(question);
-
-            Answers answers = new Answers();
-            answers.setQuestion(question);
-            answers.setCorrectAnswer(quizQuestion.correctAnswer());
-            answersList.add(answers);
-
-        }
-
-        if (questions.isEmpty()) {
-            log.error("No valid questions available to save for Quiz ID: {}", quiz.getId() );
-            throw new QuizGenerationException("No valid questions available to save" );
-        }
-
-        try {
-
-            questionRepository.saveAll(questions);
-
-            //save answers in db
-            saveAnswersInDB(answersList, quiz);
-
-        } catch (DataAccessException e) {
-            log.error("Failed to save quiz questions. quizId={}", quiz.getId(), e );
-
-            throw new QuizGenerationException("Failed to save quiz questions", e);
-        }
-    }
-
-    // save all answers in database
-    private void saveAnswersInDB(List<Answers> answers, Quizzes quiz){
-
-        if(answers.isEmpty()){
-            log.error("No valid answers available to save for Quiz ID: {}", quiz.getId() );
-            throw new QuizGenerationException("No valid answers available to save" );
-        }
-
-        try{
-            answerRepository.saveAll(answers);
-
-        } catch (DataAccessException e) {
-            log.error("Failed to save answers. quizId={}", quiz.getId(), e);
-
-            throw new QuizGenerationException("Failed to save quiz answers", e);
-        }
-
-    }
 
 }
 

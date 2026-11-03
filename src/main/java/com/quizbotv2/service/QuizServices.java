@@ -144,7 +144,9 @@ public class QuizServices {
                     return new UserExceptions("Quiz not found");
                 });
 
-        Marks marks = new Marks();
+        Marks marks = markRepository
+                .findByQuizzesId(quizId)
+                .orElseGet(Marks::new);
 
         marks.setMark(resultDTO.mark());
         marks.setUser(user);

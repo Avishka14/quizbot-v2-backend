@@ -8,6 +8,7 @@ import com.quizbotv2.helper.CustomOIDCAuthUser;
 import com.quizbotv2.model.User;
 import com.quizbotv2.service.OpenRouterService;
 import com.quizbotv2.service.QuizServices;
+import com.quizbotv2.service.UserQuizService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -28,10 +29,12 @@ public class QuizController {
 
     private final OpenRouterService openRouterService;
     private final QuizServices quizServices;
+    private final UserQuizService userQuizService;
 
-    public QuizController(OpenRouterService openRouterService, QuizServices quizServices) {
+    public QuizController(OpenRouterService openRouterService, QuizServices quizServices, UserQuizService userQuizService) {
         this.openRouterService = openRouterService;
         this.quizServices = quizServices;
+        this.userQuizService = userQuizService;
     }
 
     @PostMapping("/generate")
@@ -50,7 +53,7 @@ public class QuizController {
            return openRouterService.generateQuiz(quizGenerationRequest);
         }else{
             User user = principle.getUser();
-           return quizServices.generateQuizWithUserId(quizGenerationRequest, user.getId());
+           return userQuizService.generateQuizWithUserId(quizGenerationRequest, user.getId());
         }
 
     }
@@ -74,7 +77,7 @@ public class QuizController {
                     submitDateTime
             );
 
-            UserQuizResultDTO userQuizResultDTO =  quizServices.calculateResult(userQuizInputsDTO);
+            UserQuizResultDTO userQuizResultDTO =  userQuizService.calculateResult(userQuizInputsDTO);
             return ResponseEntity.ok(userQuizResultDTO);
         }
 

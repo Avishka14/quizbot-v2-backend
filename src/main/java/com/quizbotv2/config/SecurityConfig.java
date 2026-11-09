@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/api/users/user", "/api/quiz/getquiz").permitAll()
+                        .requestMatchers("/", "/api/users/user", "/api/quiz/getquiz", "/api/quiz/generate").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

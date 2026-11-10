@@ -3,6 +3,8 @@ package com.quizbotv2.service;
 
 import com.quizbotv2.dto.userdtos.UserQuizAnswersDTO;
 import com.quizbotv2.dto.userdtos.UserQuizzesHistoryDTO;
+import com.quizbotv2.exception.ErrorCode;
+import com.quizbotv2.exception.ResourceNotFoundException;
 import com.quizbotv2.exception.UserExceptions;
 import com.quizbotv2.model.Answers;
 import com.quizbotv2.model.Marks;
@@ -42,14 +44,14 @@ public class QuizHistoryServices {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("Quiz history retrieval failed - user not found: {}", userId);
-                    return new UserExceptions("User not found: " + userId);
+                    return new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND);
                 });
 
         List<Quizzes> quizzesList = quizzesRepository.findByUserId(userId);
 
         if(quizzesList.isEmpty()){
             log.info("Not found any quizzes for user: {}", userId);
-            throw new UserExceptions("Quizzes not found: " + user.getName());
+            throw new ResourceNotFoundException(ErrorCode.QUIZ_NOT_FOUND);
         }else{
 
             List<UserQuizzesHistoryDTO> historyDTOList = new ArrayList<>();
@@ -61,7 +63,7 @@ public class QuizHistoryServices {
                         .findByUserIdAndQuizzesId(userId, quiz.getId())
                         .orElseThrow(() -> {
                             log.error("Marks not found for user {} quiz {}", userId, quiz.getId());
-                            return new UserExceptions("Marks not found for quiz: " + quiz.getId());
+                            return new ResourceNotFoundException(ErrorCode.QUIZ_MARKS_NOTFOUND);
                         });
 
 

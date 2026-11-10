@@ -36,7 +36,8 @@ public enum ErrorCode {
     QUIZ_NO_QUESTIONS_SUBMITTED(HttpStatus.BAD_REQUEST, "QUIZ_015", "At least one question is required to calculate the result."),
     QUIZ_EMPTY_RESULT(HttpStatus.BAD_GATEWAY, "QUIZ_016", "Quiz generation returned an empty result."),
     QUIZ_NO_VALID_QUESTIONS(HttpStatus.BAD_GATEWAY, "QUIZ_017", "The generated quiz had no valid questions."),
-    QUIZ_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "QUIZ_018", "Could not save the quiz. Please try again.");
+    QUIZ_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "QUIZ_018", "Could not save the quiz. Please try again."),
+    QUIZ_MARKS_NOTFOUND(HttpStatus.NOT_FOUND, "QUIZ_019", "Marks Not found for the Quiz.");
 
 
     private final HttpStatus status;

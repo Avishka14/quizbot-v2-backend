@@ -188,10 +188,7 @@ public class UserQuizService {
 
         if (input == null) {
             log.error("Quiz result calculation failed: input is null");
-
-            throw new UserExceptions(
-                    "Quiz input is required to calculate the result"
-            );
+            throw new UserExceptions(ErrorCode.QUIZ_INPUT_REQUIRED);
         }
 
         if (input.id() == null || input.quizId() == null) {
@@ -201,9 +198,7 @@ public class UserQuizService {
                     input.quizId()
             );
 
-            throw new UserExceptions(
-                    "User ID and quiz ID are required to calculate"
-            );
+            throw new UserExceptions(ErrorCode.QUIZ_IDS_REQUIRED);
         }
 
         if (input.questionsDTOS() == null ||
@@ -215,9 +210,7 @@ public class UserQuizService {
                     input.quizId()
             );
 
-            throw new UserExceptions(
-                    "At least one question is required to calculate the result"
-            );
+            throw new UserExceptions(ErrorCode.QUIZ_NO_QUESTIONS_SUBMITTED);
         }
 
         QuizCalculationHelper.validateQuizTime(input, startTime);
@@ -230,13 +223,13 @@ public class UserQuizService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found. userId={}", userId);
-                    return new UserExceptions("User not found");
+                    return new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND);
                 });
 
         Quizzes quiz = quizzesRepository.findById(quizId)
                 .orElseThrow(() -> {
                     log.error("Quiz not found. quizId={}", quizId);
-                    return new UserExceptions("Quiz not found");
+                    return new ResourceNotFoundException(ErrorCode.QUIZ_NOT_FOUND);
                 });
 
         Marks marks = markRepository

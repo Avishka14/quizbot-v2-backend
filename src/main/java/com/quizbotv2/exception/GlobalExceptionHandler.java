@@ -35,6 +35,11 @@ public class GlobalExceptionHandler {
         return build(ex.getErrorCode(), ex.getErrorCode().getDefaultMessage());
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+        return build(ex.getErrorCode(), ex.getErrorCode().getDefaultMessage());
+    }
+
     private ResponseEntity<ErrorResponse> build(ErrorCode code, String message) {
         ErrorResponse body = ErrorResponse.builder()
                 .code(code.getCode())

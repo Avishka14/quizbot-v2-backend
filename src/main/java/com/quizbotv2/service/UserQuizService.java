@@ -6,7 +6,9 @@ import com.quizbotv2.dto.quizdtos.QuizQuestion;
 import com.quizbotv2.dto.quizdtos.QuizResult;
 import com.quizbotv2.dto.userdtos.UserQuizInputsDTO;
 import com.quizbotv2.dto.userdtos.UserQuizResultDTO;
+import com.quizbotv2.exception.ErrorCode;
 import com.quizbotv2.exception.QuizGenerationException;
+import com.quizbotv2.exception.ResourceNotFoundException;
 import com.quizbotv2.exception.UserExceptions;
 import com.quizbotv2.helper.QuizCalculationHelper;
 import com.quizbotv2.model.*;
@@ -49,35 +51,29 @@ public class UserQuizService {
 
     //    Generates a quiz for a logged-in user and saves
     @Transactional
-    public QuizResult generateQuizWithUserId(
-            QuizGenerationRequest quizGenerationRequest,
-            UUID userId
-    ) {
+    public QuizResult generateQuizWithUserId(QuizGenerationRequest request, UUID userId) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("Quiz generation failed - user not found: {}", userId);
-                    return new UserExceptions("User not found: " + userId);
+                    return new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND);
                 });
 
-        QuizResult quizResult = openRouterService.generateQuiz(quizGenerationRequest);
+        QuizResult quizResult = openRouterService.generateQuiz(request);
 
         if (quizResult == null) {
             log.error("Quiz generation returned null result for user: {}", userId);
-            throw new QuizGenerationException("Quiz generation returned an empty result");
+            throw new QuizGenerationException(ErrorCode.QUIZ_EMPTY_RESULT);
         }
-
-        List<QuizQuestion> generatedQuestions = quizResult.questions();
 
         Quizzes quiz = new Quizzes();
         quiz.setId(quizResult.id());
         quiz.setUser(user);
         quiz.setCreatedAt(LocalDateTime.now());
 
-        //save new quiz
         Quizzes savedQuiz = quizzesRepository.save(quiz);
 
-        saveQuestionsInDb(generatedQuestions, savedQuiz);
+        saveQuestionsInDb(quizResult.questions(), savedQuiz);
         return quizResult;
     }
 
@@ -112,8 +108,8 @@ public class UserQuizService {
         }
 
         if (questions.isEmpty()) {
-            log.error("No valid questions available to save for Quiz ID: {}", quiz.getId() );
-            throw new QuizGenerationException("No valid questions available to save" );
+            log.error("No valid questions available to save for Quiz ID: {}", quiz.getId());
+            throw new QuizGenerationException(ErrorCode.QUIZ_NO_VALID_QUESTIONS);
         }
 
         try {
@@ -124,18 +120,17 @@ public class UserQuizService {
             saveAnswersInDB(answersList, quiz);
 
         } catch (DataAccessException e) {
-            log.error("Failed to save quiz questions. quizId={}", quiz.getId(), e );
-
-            throw new QuizGenerationException("Failed to save quiz questions", e);
+            log.error("Failed to save quiz questions. quizId={}", quiz.getId(), e);
+            throw new QuizGenerationException(ErrorCode.QUIZ_SAVE_FAILED, e);
         }
     }
 
     // save all answers in database
     private void saveAnswersInDB(List<Answers> answers, Quizzes quiz){
 
-        if(answers.isEmpty()){
-            log.error("No valid answers available to save for Quiz ID: {}", quiz.getId() );
-            throw new QuizGenerationException("No valid answers available to save" );
+        if (answers.isEmpty()) {
+            log.error("No valid answers available to save for Quiz ID: {}", quiz.getId());
+            throw new QuizGenerationException(ErrorCode.QUIZ_NO_VALID_QUESTIONS);
         }
 
         try{
@@ -143,8 +138,7 @@ public class UserQuizService {
 
         } catch (DataAccessException e) {
             log.error("Failed to save answers. quizId={}", quiz.getId(), e);
-
-            throw new QuizGenerationException("Failed to save quiz answers", e);
+            throw new QuizGenerationException(ErrorCode.QUIZ_SAVE_FAILED, e);
         }
 
     }
@@ -185,7 +179,7 @@ public class UserQuizService {
 
         }else{
             log.error("Quiz result calculation failed: Quiz ID is invalid ID: {}", quizId);
-            throw new QuizGenerationException("Quiz result calculation failed: Quiz ID is invalid ID: {}, quizId");
+            throw new ResourceNotFoundException(ErrorCode.QUIZ_NOT_FOUND);
         }
 
     }

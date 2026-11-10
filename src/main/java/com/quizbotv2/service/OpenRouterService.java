@@ -5,6 +5,7 @@ import com.quizbotv2.dto.quizdtos.QuizResponse;
 import com.quizbotv2.dto.quizdtos.QuizResult;
 import com.quizbotv2.dto.quizdtos.QuizTopic;
 import com.quizbotv2.dto.quizdtos.QuizGenerationRequest;
+import com.quizbotv2.exception.ErrorCode;
 import com.quizbotv2.exception.QuizGenerationException;
 import com.quizbotv2.helper.PromptBuildHelper;
 import com.quizbotv2.helper.QuizValidator;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import tools.jackson.databind.ObjectMapper;
 
 
@@ -66,21 +68,35 @@ public class OpenRouterService {
 
     private String callModel(QuizRequest apiRequest){
 
-        QuizResponse response = webClient.post()
-                .uri("/chat/completions")
-                .bodyValue(apiRequest) // Spring/WebClient converts java object to a JSON automatically
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, resp ->
-                        resp.bodyToMono(String.class).map(body -> {
-                            log.error("OpenRouter {} -> {}", resp.statusCode(), body);
-                            return new QuizGenerationException("OpenRouter error: " + body);
-                        }))
-                .bodyToMono(QuizResponse.class)
-                .block();
+        QuizResponse response;
+        try {
+            response = webClient.post()
+                    .uri("/chat/completions")
+                    .bodyValue(apiRequest)
+                    .retrieve()
+                    .onStatus(HttpStatusCode::isError, resp ->
+                            resp.bodyToMono(String.class)
+                                    .defaultIfEmpty("")
+                                    .map(body -> {
+                                        log.error("OpenRouter {} -> {}", resp.statusCode(), body);
+                                        ErrorCode code = resp.statusCode().value() == 429
+                                                ? ErrorCode.QUIZ_UPSTREAM_RATE_LIMITED
+                                                : ErrorCode.QUIZ_UPSTREAM_ERROR;
+                                        // body is logged only, never sent to the client
+                                        return new QuizGenerationException(
+                                                code, "OpenRouter " + resp.statusCode() + ": " + body);
+                                    }))
+                    .bodyToMono(QuizResponse.class)
+                    .block();
+        } catch (WebClientRequestException e) {
+            // connection refused, DNS failure, read/connect timeout (no HTTP response at all)
+            log.error("Could not reach OpenRouter for model: {}", model, e);
+            throw new QuizGenerationException(ErrorCode.QUIZ_UPSTREAM_UNREACHABLE, e);
+        }
 
         if (response == null || response.choices() == null || response.choices().isEmpty()) {
             log.error("No response received from OpenRouter model: {}", model);
-            throw new QuizGenerationException("No response from model.");
+            throw new QuizGenerationException(ErrorCode.QUIZ_EMPTY_MODEL_RESPONSE);
         }
 
         return response.choices().get(0).message().content();

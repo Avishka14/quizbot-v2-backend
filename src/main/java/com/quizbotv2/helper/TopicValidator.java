@@ -1,5 +1,6 @@
 package com.quizbotv2.helper;
 
+import com.quizbotv2.exception.ErrorCode;
 import com.quizbotv2.exception.InvalidTopicException;
 
 import java.text.Normalizer;
@@ -29,7 +30,7 @@ public final class TopicValidator {
 
     public static String validate(String rawTopic) {
         if (rawTopic == null || rawTopic.isBlank()) {
-            throw new InvalidTopicException("Topic must not be empty.");
+            throw new InvalidTopicException(ErrorCode.TOPIC_EMPTY);
         }
 
         // 1. Normalize: unicode tricks (fullwidth chars etc.), trim, collapse spaces
@@ -39,23 +40,24 @@ public final class TopicValidator {
 
         // 2. Length limits
         if (topic.length() < MIN_LENGTH || topic.length() > MAX_LENGTH) {
-            throw new InvalidTopicException(
+            throw new InvalidTopicException(ErrorCode.TOPIC_LENGTH,
                     "Topic must be between " + MIN_LENGTH + " and " + MAX_LENGTH + " characters.");
         }
         if (topic.split(" ").length > MAX_WORDS) {
-            throw new InvalidTopicException("Topic must be at most " + MAX_WORDS + " words.");
+            throw new InvalidTopicException(ErrorCode.TOPIC_TOO_MANY_WORDS,
+                    "Topic must be at most " + MAX_WORDS + " words.");
         }
 
         // 3. Allowlist check
         if (!ALLOWED.matcher(topic).matches()) {
-            throw new InvalidTopicException("Topic contains invalid characters.");
+            throw new InvalidTopicException(ErrorCode.TOPIC_INVALID_CHARS);
         }
 
         // 4. Suspicious phrase check
         String lower = topic.toLowerCase(Locale.ROOT);
         for (String phrase : SUSPICIOUS_PHRASES) {
             if (lower.contains(phrase)) {
-                throw new InvalidTopicException("Topic is not allowed.");
+                throw new InvalidTopicException(ErrorCode.TOPIC_NOT_ALLOWED);
             }
         }
 

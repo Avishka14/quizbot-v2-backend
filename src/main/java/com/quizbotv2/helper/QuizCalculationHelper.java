@@ -3,6 +3,9 @@ package com.quizbotv2.helper;
 import com.quizbotv2.dto.userdtos.UserQuestionsDTO;
 import com.quizbotv2.dto.userdtos.UserQuizInputsDTO;
 import com.quizbotv2.dto.userdtos.UserQuizResultDTO;
+import com.quizbotv2.exception.ErrorCode;
+import com.quizbotv2.exception.InvalidQuizRequestException;
+import com.quizbotv2.exception.QuizGenerationException;
 import com.quizbotv2.exception.UserExceptions;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,8 +31,8 @@ public final class QuizCalculationHelper {
                     input.quizId()
             );
 
-            throw new UserExceptions(
-                    "Quiz start time and end time are required to calculate the result"
+            throw new InvalidQuizRequestException(
+                    ErrorCode.QUIZ_START_TIME_END_TIME_MISSING
             );
         }
 
@@ -43,8 +46,8 @@ public final class QuizCalculationHelper {
                     input.quizId()
             );
 
-            throw new UserExceptions(
-                    "Quiz end time cannot be before start time"
+            throw new InvalidQuizRequestException(
+                    ErrorCode.QUIZ_START_TIME_INVALID
             );
         }
     }

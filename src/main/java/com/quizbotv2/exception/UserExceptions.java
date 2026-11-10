@@ -1,6 +1,18 @@
 package com.quizbotv2.exception;
 
-public class UserExceptions extends RuntimeException{
-    public UserExceptions(String message) { super(message); }
-    public UserExceptions(String message, Throwable cause) { super(message, cause); }
+import lombok.Getter;
+
+@Getter
+public class UserExceptions extends RuntimeException {
+    private final ErrorCode errorCode;
+
+    public UserExceptions(ErrorCode errorCode) {
+        super(errorCode.getDefaultMessage());
+        this.errorCode = errorCode;
+    }
+
+    public UserExceptions(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getDefaultMessage(), cause);
+        this.errorCode = errorCode;
+    }
 }

@@ -40,6 +40,11 @@ public class GlobalExceptionHandler {
         return build(ex.getErrorCode(), ex.getErrorCode().getDefaultMessage());
     }
 
+    @ExceptionHandler(UserExceptions.class)
+    public ResponseEntity<ErrorResponse> handleUserExceptions(UserExceptions ex) {
+        return build(ex.getErrorCode(), ex.getErrorCode().getDefaultMessage());
+    }
+
     private ResponseEntity<ErrorResponse> build(ErrorCode code, String message) {
         ErrorResponse body = ErrorResponse.builder()
                 .code(code.getCode())

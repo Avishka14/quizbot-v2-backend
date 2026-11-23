@@ -1,0 +1,12 @@
+package com.quizbot.repo;
+
+import com.quizbot.model.Marks;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface MarkRepository extends JpaRepository<Marks, Long> {
+    Optional<Marks> findByQuizzesId(Long quizId);
+    Optional<Marks> findByUserIdAndQuizzesId(UUID userId, Long quizzesId);
+}

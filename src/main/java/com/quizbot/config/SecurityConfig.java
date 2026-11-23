@@ -41,10 +41,10 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(authService)
                         )
-                        .defaultSuccessUrl("http://localhost:5173/account", true)
+                        .defaultSuccessUrl("http://localhost:3000/account", true)
                 )
                 .logout(logout -> logout.
-                        logoutSuccessUrl("http://localhost:5173/logout")
+                        logoutSuccessUrl("http://localhost:3000/logout")
                 );
 
         return http.build();

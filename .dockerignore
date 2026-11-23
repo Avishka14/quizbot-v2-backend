@@ -1,0 +1,29 @@
+# IntelliJ IDEA
+.idea/
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+target/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+.dockerignore
+
+# Documentation
+README.md
+Helmp.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp

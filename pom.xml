@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com</groupId>
-    <artifactId>quizbot-v2</artifactId>
+    <artifactId>quizbot-backend</artifactId>
     <version>0.0.1</version>
     <name>quizbot-v2</name>
     <description>quizbot-v2</description>
